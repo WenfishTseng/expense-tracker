@@ -1,0 +1,55 @@
+<div class="col-md-9 my-3 m-auto">
+    <div class="mb-3">
+        <form action="/search" method="get">
+            <select class="form-select" id="category" name="category" onchange="submit()">
+                <option value="">全部</option>
+                {{#each categories}}
+                <option value="{{ this._id }}" {{#if this.selected}}selected{{/if}}>{{ this.name }}</option>
+                {{/each}}
+            </select>
+        </form>
+    </div>
+    <div class="mt-5 text-center">
+        <h2>總消費：</h2>
+        <h1 id="totalAmount" class="text-warning">${{ totalAmount }}</h1>
+    </div>
+    <div class="mt-5">
+        <table class="table table-striped align-middle mx-auto">
+            <thead>
+                <tr class="table-dark">
+                    <th scope="col">類別</th>
+                    <th scope="col">名稱</th>
+                    <th scope="col">日期</th>
+                    <th scope="col">金額</th>
+                    <th scope="col"></th>
+                    <th scope="col"></th>
+                </tr>
+            </thead>
+            <tbody>
+                {{#each records}}
+                <tr>
+                    <th scope="row">
+                        {{this.categoryId.name}}
+                        <i class="{{this.categoryId.icon}}" style="color: #1f2d37;"></i>
+                    </th>
+                    <td>{{this.name}}</td>
+                    <td>{{dateFormat this.date "YYYY-MM-DD"}}</td>
+                    <td>${{this.amount}}</td>
+                    <td>
+                        <a href="/records/{{this._id}}/edit" class="btn btn-success btn-sm">修改</a>
+                    </td>
+                    <td>
+                        <form id="deleteForm" action="/records/{{this._id}}?_method=DELETE" method="POST">
+                            <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal"
+                                data-bs-target="#deleteModal">刪除</button>
+                        </form>
+                    </td>
+                </tr>
+                {{/each}}
+            </tbody>
+        </table>
+    </div>
+    <div class="mt-5 text-center">
+        <a href="/records/new" class="btn btn-outline-primary">新增支出</a>
+    </div>
+</div>
