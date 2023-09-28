@@ -24,14 +24,14 @@ app.set('view engine', 'hbs');
 
 Handlebars.registerHelper('dateFormat', require('handlebars-dateformat'));
 
-app.use(methodOverride('_method'));
 app.use(
   session({
-    secret: process.env.SESSION_SECRET,
+    secret: process.env.SESSION_SECRET || 'ThisIsMySecret',
     resave: false,
     saveUninitialized: true,
   })
 );
+app.use(methodOverride('_method'));
 app.use(flash());
 app.use(express.urlencoded({ extended: true }));
 usePassport(app);
