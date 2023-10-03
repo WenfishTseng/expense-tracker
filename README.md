@@ -38,7 +38,7 @@ npm install
 4. 安裝 nodemon 套件
 
 ```
-npm i -g nodemon 
+npm i nodemon 
 ```
 
 5. 安裝完畢後，設定環境變數，請參照.env.example
@@ -90,4 +90,5 @@ App is running on http://localhost:3000
 - "mongoose": "^7.4.1",
 - "passport": "^0.6.0",
 - "passport-facebook": "^3.0.0",
-- "passport-local": "^1.0.0"
+- "passport-local": "^1.0.0",
+- "moment": "^2.29.4"
