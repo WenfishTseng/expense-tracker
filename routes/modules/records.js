@@ -1,79 +1,106 @@
 const express = require('express');
+const moment = require('moment');
 const router = express.Router();
 const Record = require('../../models/record');
 const Category = require('../../models/category');
-const User = require('../../models/user');
 
-router.get('/new', (req, res) => {
-  Category.find()
-    .lean()
-    .then((categories) => {
-      res.render('new', { categories });
-    });
+router.get('/new', async (req, res) => {
+  try {
+    const categories = await Category.find().lean();
+    res.render('new', { categories });
+  } catch (error) {
+    console.error(error);
+    res.render('error', { error });
+  }
 });
 
-router.post('/new', (req, res) => {
-  const userId = req.user._id;
-  const { name, date, categoryName, amount } = req.body;
-  Category.findOne({ name: categoryName })
-    .lean()
-    .then((category) => {
-      let categoryId = category._id;
-      Record.create({
+router.post('/new', async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const { name, date, categoryId, amount } = req.body;
+    // 記錄選擇的類別狀態
+    const categories = await Category.find().lean();
+    categories.forEach((data) => {
+      data.selected = String(data._id) === categoryId;
+    });
+    const errors = [];
+    if (!name || !date || !amount || !categoryId)
+      errors.push({ message: '所有欄位都是必填的' });
+    if (errors.length) {
+      return res.render('new', {
+        errors,
         name,
         date,
         amount,
-        userId,
-        categoryId,
+        categories,
       });
-    })
-    .then(() => res.redirect('/'))
-    .catch((error) => console.log(error));
+    }
+    // 儲存
+    await Record.create({ name, date, categoryId, amount, userId });
+    res.redirect('/');
+  } catch (error) {
+    console.error(error);
+    res.render('error', { error });
+  }
 });
 
-router.get('/:id/edit', (req, res) => {
+router.get('/:id/edit', async (req, res) => {
   const userId = req.user._id;
   const _id = req.params.id;
-  Category.find()
-    .lean()
-    .then((categories) => {
-      Record.findOne({ _id, userId })
-        .populate('categoryId')
-        .lean()
-        .then((record) => {
-          categories.map((category, index) => {
-            if (String(category._id) === String(record.categoryId)) {
-              category.selected = true;
-            } else {
-              category.selected = false;
-            }
-          });
-          res.render('edit', { categories, record });
-        })
-        .catch((error) => console.log(error));
-    })
-    .catch((error) => console.log(error));
+  try {
+    // 取得相關資料
+    const categories = await Category.find().lean();
+    const record = await Record.findById({ _id, userId }).lean();
+    // 找出這筆紀錄的原分類
+    categories.forEach((category) => {
+      category.selected = String(category._id) === String(record.categoryId);
+    });
+    // 找出這筆紀錄的原日期
+    record.date = moment(record.date).format('YYYY-MM-DD');
+    res.render('edit', { categories, record });
+  } catch (error) {
+    console.error(error);
+    res.render('error', { error });
+  }
 });
 
-router.put('/:id/edit', (req, res) => {
-  const userId = req.user._id;
-  const _id = req.params.id;
-  const { name, date, categoryName, amount } = req.body;
-  Category.findOne({ name: categoryName })
-    .then((category) => {
-      Record.findOne({ _id, userId })
-        .then((record) => {
-          record.name = name;
-          record.date = date;
-          record.amount = amount;
-          record.categoryId = category._id;
+router.put('/:id/edit', async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const _id = req.params.id;
+    const { name, date, amount, categoryId } = req.body;
+    const errors = [];
+    // 取得原紀錄的的分類
+    const categories = await Category.find().lean();
+    categories.forEach((data) => {
+      data.selected = String(data._id) === categoryId;
+    });
 
-          return record.save();
-        })
-        .then(() => res.redirect('/'))
-        .catch((error) => console.log(error));
-    })
-    .catch((error) => console.log(error));
+    // 輸入有誤 不可更新
+    if (!name || !date || !amount || !categoryId)
+      errors.push({ message: '所有欄位都是必填！' });
+    if (errors.length) {
+      const record = await Record.findById({ _id, userId }).lean();
+      record.date = moment(record.date).format('YYYY-MM-DD');
+      res.render('edit', { errors, record, categories });
+    } else {
+      // 更新
+      await Record.findByIdAndUpdate(
+        { _id, userId },
+        {
+          name,
+          date,
+          amount,
+          userId,
+          categoryId,
+        }
+      );
+      res.redirect('/');
+    }
+  } catch (error) {
+    console.error(error);
+    res.render('error', { error });
+  }
 });
 
 router.delete('/:id', (req, res) => {
