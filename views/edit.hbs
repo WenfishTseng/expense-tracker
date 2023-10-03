@@ -1,6 +1,7 @@
 <div class="col-md-9 my-3 m-auto">
   <div class="my-2 text-center">
     <h2>請修改你的支出：</h2>
+    {{> message}}
     <span class="text-danger">*</span>
     <small>必填欄位</small>
   </div>
@@ -20,15 +21,15 @@
           <span class="text-danger">*</span>
           日期
         </span>
-        <input type="date" class="form-control" name="date" id="date" value="{{dateFormat record.date "YYYY-MM-DD"}}"
-          aria-describedby="date" aria-label="date" required>
+        <input type="date" class="form-control" name="date" id="date" value="{{ record.date }}" aria-describedby="date"
+          aria-label="date" required>
       </div>
       <div class="input-group mb-3">
         <label class="input-group-text" for="category">
           <span class="text-danger">*</span>
           類別
         </label>
-        <select class="form-select" name="categoryName" id="category" required>
+        <select class="form-select" name="categoryId" id="category" required>
           {{#each categories}}
           <option value="{{ this._id }}" {{#if this.selected}}selected{{/if}}>{{ this.name }}</option>
           {{/each}}

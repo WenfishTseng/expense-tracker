@@ -1,6 +1,7 @@
 <div class="col-7 my-3 m-auto">
   <div class="my-2 text-center">
     <h2>請輸入你的支出：</h2>
+    {{> message}}
     <span class="text-danger">*</span>
     <small>必填欄位</small>
   </div>
@@ -28,10 +29,10 @@
           <span class="text-danger">*</span>
           類別
         </label>
-        <select class="form-select" name="categoryName" id="category" required>
-          <option selected>...</option>
+        <select class="form-select" name="categoryId" id="category" required>
+          <option selected disabled>...</option>
           {{#each categories}}
-          <option value="{{this.name}}">{{this.name}}</option>
+          <option value="{{this._id}}">{{this.name}}</option>
           {{/each}}
         </select>
       </div>
